@@ -19,6 +19,7 @@
     "@material-ui/icons": "^4.9.1",
     "babel-loader": "^8.2.2",
     "css-loader": "^5.2.0",
+    "d3-ease": "^2.0.0",
     "file-loader": "^6.2.0",
     "path": "^0.12.7",
     "react": "^17.0.2",

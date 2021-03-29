@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 
 // react-map-gl is a wrapper around mapbox js library, which is more react-friendly.
-import ReactMapGL, { Marker, Popup } from "react-map-gl";
-import Button from "@material-ui/core/Button";
-import { LanguageTwoTone, ViewWeek } from "@material-ui/icons";
+import ReactMapGL, { Marker, Popup, FlyToInterpolator } from "react-map-gl";
+import { easeCubic } from "d3-ease";
 
 function distance(lat1, lon1, lat2, lon2, unit = "M") {
   if (lat1 == lat2 && lon1 == lon2) {
@@ -41,8 +40,8 @@ export default function Map() {
   const [viewport, setViewport] = useState({
     latitude: 0,
     longitude: 0,
-    width: "100vw",
-    height: "100vh",
+    width: "100%",
+    height: "100%",
     zoom: 0,
   });
   const [selectedCamera, setSelectedCamera] = useState(null);
@@ -60,17 +59,19 @@ export default function Map() {
   //     1. Cleanup update interval function
   let updateTimer = null;
   function initViewport(position) {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-    console.log(latitude, longitude);
-
-    viewport.latitude = latitude;
-    viewport.longitude = longitude;
-    setViewport(viewport);
-    console.log(viewport);
+    let latitude = position.coords.latitude;
+    let longitude = position.coords.longitude;
+    setViewport({
+      ...viewport,
+      latitude: latitude,
+      longitude: longitude,
+      transitionDuration: 3000,
+      transitionInterpolator: new FlyToInterpolator(),
+      transitionEasing: easeCubic,
+      zoom: 15,
+    });
   }
   function getVisibleCameras() {
-    // ("Call getVisibleCameras");
     return;
     const queryString =
       "?latitude=" + viewport.latitude + "&longitude=" + viewport.longitude;
@@ -86,11 +87,9 @@ export default function Map() {
     const lat2 = newViewport.latitude;
     const lon2 = newViewport.longitude;
     const dist = distance(lat1, lon1, lat2, lon2);
-    // console.log("Viewport moving distance: " + dist);
-    setViewport(newViewport);
-    console.log(viewport);
+    setViewport({ ...newViewport, width: "fit", height: "fit" });
     if (dist >= 100) {
-      getVisibleCameras;
+      getVisibleCameras();
     }
   }
   function logError(e) {
@@ -98,17 +97,15 @@ export default function Map() {
   }
   useEffect(() => {
     // componentDidMount
-    if (viewport.latitude === 0 && viewport.longitude === 0) {
-      console.log("Map initialization");
+    if (viewport.latitude === 0 && viewport.longitude === 0 && !updateTimer) {
       navigator.geolocation.getCurrentPosition(initViewport, logError);
-    }
-    if (!updateTimer) {
+      console.log("update timer");
       updateTimer = setInterval(() => {
         getVisibleCameras();
       }, 500);
     }
     return function cleanup() {
-      console.log("Map get cleaned up");
+      console.log("cleanup timer");
       clearInterval(updateTimer);
       updateTimer = null;
     };
@@ -119,7 +116,7 @@ export default function Map() {
     <ReactMapGL
       {...viewport}
       mapboxApiAccessToken="pk.eyJ1Ijoiam9obm55bG9yZCIsImEiOiJja21zcng0NWwwaDRvMndvNTYwN2w4NnBpIn0.D5Xe_RcIHE5-Mfp9-QXcZw"
-      onViewportChange={setViewport}
+      onViewportChange={updateViewport}
       mapStyle="mapbox://styles/johnnylord/ckmssit732xsr17lgg3ddhpwe"
     >
       {/* All visible cameras will be showned here */}
