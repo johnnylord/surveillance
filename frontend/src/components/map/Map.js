@@ -119,7 +119,7 @@ export default function Map() {
     <ReactMapGL
       {...viewport}
       mapboxApiAccessToken="pk.eyJ1Ijoiam9obm55bG9yZCIsImEiOiJja21zcng0NWwwaDRvMndvNTYwN2w4NnBpIn0.D5Xe_RcIHE5-Mfp9-QXcZw"
-      onViewportChange={updateViewport}
+      onViewportChange={setViewport}
       mapStyle="mapbox://styles/johnnylord/ckmssit732xsr17lgg3ddhpwe"
     >
       {/* All visible cameras will be showned here */}
